@@ -55,7 +55,7 @@ public class FinalTest {
         action = new Actions(driver);
         js = (JavascriptExecutor) driver;
         customActions = new WebElementActions(driver);
-        wait_5_sec = new WebDriverWait(driver, 5);
+        wait_5_sec = new WebDriverWait(driver, 10);
         random = new Random();
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
@@ -151,7 +151,8 @@ public class FinalTest {
             wait_5_sec.until(ExpectedConditions.textToBe(count_text_locator, count + " of 4"));
 
             wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(next_locator));
-            next.click();
+            wait_5_sec.until(ExpectedConditions.elementToBeClickable(next_locator));
+            customActions.click(next_locator);
 
             count_text = driver.findElement(count_text_locator);
             count = Integer.parseInt(count_text.getText().split(" ")[0]);
@@ -239,31 +240,39 @@ public class FinalTest {
 
         //        - Leave Delivery Details and Methods default - TODO
         wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(By.id("collapse-shipping-method")));
-
+        wait_5_sec.until(ExpectedConditions.elementToBeClickable(By.id("button-shipping-address")));
         js.executeScript("arguments[0].click()", driver.findElement(By.id("button-shipping-address")));
         js.executeScript("arguments[0].click()", driver.findElement(By.id("button-shipping-method")));
 
 
         wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(By.id("collapse-payment-method")));
-        driver.findElement(By.cssSelector("#collapse-payment-method > div > div.buttons > div > input[type=checkbox]:nth-child(2)")).click();
-        driver.findElement(By.id("button-payment-method")).click();
+        customActions.click(By.cssSelector("#collapse-payment-method > div > div.buttons > div > input[type=checkbox]:nth-child(2)"));
+        wait_5_sec.until(ExpectedConditions.elementSelectionStateToBe(By.cssSelector("#collapse-payment-method > div > div.buttons > div > input[type=checkbox]:nth-child(2)"), true));
+        customActions.click(By.id("button-payment-method"));
 
 
+        System.out.println();
         //        - In 'Confirm Order' section check that Sub-Total, Flat Shipping Rate and Total amount is correct - TODO
         wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(By.id("collapse-checkout-confirm")));
-
+        wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#collapse-checkout-confirm > div > div.table-responsive > table")));
+        By quantity_locator = By.xpath("//*[@id=\"collapse-checkout-confirm\"]/div/div[1]/table/tbody/tr/td[3]");
+//        wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(quantity_locator));
         Assert.assertEquals(
-                driver.findElement(By.xpath("//*[@id=\"collapse-checkout-confirm\"]/div/div[1]/table/tbody/tr/td[3]")).getText().trim(),
+                driver.findElement(quantity_locator).getText().trim(),
                 ((Integer)cart_count_after_submit).toString()
         );
 
+        By item_price_locator = By.xpath("//*[@id=\"collapse-checkout-confirm\"]/div/div[1]/table/tbody/tr/td[4]");
+//        wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(item_price_locator));
         Assert.assertEquals(
-                Double.parseDouble(driver.findElement(By.xpath("//*[@id=\"collapse-checkout-confirm\"]/div/div[1]/table/tbody/tr/td[4]")).getText().replace("$", "").replace(",", "").trim()),
+                Double.parseDouble(driver.findElement(item_price_locator).getText().replace("$", "").replace(",", "").trim()),
                 item_price
         );
 
+        By total_price_locator = By.xpath("//*[@id=\"collapse-checkout-confirm\"]/div/div[1]/table/tbody/tr/td[5]");
+//        wait_5_sec.until(ExpectedConditions.presenceOfElementLocated(total_price_locator));
         Assert.assertEquals(
-                Double.parseDouble(driver.findElement(By.xpath("//*[@id=\"collapse-checkout-confirm\"]/div/div[1]/table/tbody/tr/td[5]")).getText().replace("$", "").replace(",", "").trim()),
+                Double.parseDouble(driver.findElement(total_price_locator).getText().replace("$", "").replace(",", "").trim()),
                 cart_price_after_submit
         );
 
